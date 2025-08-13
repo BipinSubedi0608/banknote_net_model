@@ -15,3 +15,7 @@ X_VAL_FILE = "X_val.npy"
 Y_VAL_FILE = "y_val.npy"
 X_TEST_FILE = "X_test.npy"
 Y_TEST_FILE = "y_test.npy"
+
+# Saved model file names
+MODEL_NAME = 'currency_classifier.pth'
+SCALER_NAME = 'scaler.pkl'
