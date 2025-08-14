@@ -7,16 +7,25 @@ from torch.nn import CrossEntropyLoss
 import matplotlib.pyplot as plt
 
 from model.model_definition import CurrencyClassifier
+from utils.helpers import get_device
 from utils.constants import (
-    PROCESSED_DATA_DIR, 
-    X_TRAIN_FILE, 
-    X_VAL_FILE, 
-    Y_TRAIN_FILE, 
+    PROCESSED_DATA_DIR,
+    SAVED_MODELS_DIR,
+    MODEL_NAME,
+    X_TRAIN_FILE,
+    X_VAL_FILE,
+    Y_TRAIN_FILE,
     Y_VAL_FILE
 )
-from utils.helpers import set_cuda_if_available
 
-def load_preprocessed_datasets():
+# Constants
+BATCH_SIZE = 128
+EPOCHS = 20
+LEARNING_RATE = 0.01
+DROPOUT_RATE = 0.3
+
+
+def load_data():
     X_train = np.load(PROCESSED_DATA_DIR + X_TRAIN_FILE)
     X_val = np.load(PROCESSED_DATA_DIR + X_VAL_FILE)
     y_train = np.load(PROCESSED_DATA_DIR + Y_TRAIN_FILE)
@@ -24,7 +33,8 @@ def load_preprocessed_datasets():
 
     return X_train, X_val, y_train, y_val
 
-def get_dataloaders(X_train, X_val, y_train, y_val, batch_size):
+
+def create_dataloaders(X_train, X_val, y_train, y_val, batch_size):
     X_train_tensor = FloatTensor(X_train)
     X_val_tensor = FloatTensor(X_val)
     y_train_tensor = LongTensor(y_train)
@@ -37,24 +47,20 @@ def get_dataloaders(X_train, X_val, y_train, y_val, batch_size):
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     input_dim = X_train_tensor.shape[1]
-    output_dim = len(y_train_tensor.unique())
-    
+    output_dim = len(np.unique(y_train))
+
     return train_loader, val_loader, input_dim, output_dim
 
-def train_and_validate(
-        train_loader, 
-        val_loader, 
-        input_dim, 
-        output_dim, 
-        dropout_rate, 
-        learning_rate, 
-        epochs
-    ):
-    device = set_cuda_if_available()
+
+def initialize_model(input_dim, output_dim, dropout_rate, device):
     model = CurrencyClassifier(input_dim, output_dim, dropout_rate).to(device)
     criterion = CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
+    return model, criterion, optimizer
+
+
+def train_and_validate(model, criterion, optimizer, train_loader, val_loader, device, epochs):
     train_losses, val_losses = [], []
     train_accuracies, val_accuracies = [], []
     best_val_loss = float('inf')
@@ -103,9 +109,10 @@ def train_and_validate(
             best_val_loss = val_loss
             best_model_state = model.state_dict()
 
-    return best_model_state
+    return train_losses, val_losses, train_accuracies, val_accuracies, best_model_state
 
-def plot_loss_and_accuracy_curve(train_losses, val_losses, train_accuracies, val_accuracies):
+
+def plot_curves(train_losses, val_losses, train_accuracies, val_accuracies):
     plt.figure(figsize=(12,5))
     plt.subplot(1,2,1)
     plt.plot(train_losses, label='Train Loss')
@@ -123,3 +130,24 @@ def plot_loss_and_accuracy_curve(train_losses, val_losses, train_accuracies, val
     plt.legend()
     plt.title('Accuracy Curve')
     plt.show()
+
+
+def save_model(best_model_state):
+    path = SAVED_MODELS_DIR + MODEL_NAME
+    torch.save(best_model_state, path)
+
+
+def main():
+    device = get_device()
+    X_train, X_val, y_train, y_val = load_data()
+    train_loader, val_loader, input_dim, output_dim = create_dataloaders(X_train, X_val, y_train, y_val, BATCH_SIZE)
+    model, criterion, optimizer = initialize_model(input_dim, output_dim, DROPOUT_RATE, device)
+    train_losses, val_losses, train_accuracies, val_accuracies, best_model_state = train_and_validate(
+        model, criterion, optimizer, train_loader, val_loader, device, EPOCHS
+    )
+    plot_curves(train_losses, val_losses, train_accuracies, val_accuracies)
+    save_model(best_model_state)
+
+
+if __name__ == "__main__":
+    main()
