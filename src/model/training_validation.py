@@ -32,7 +32,7 @@ def create_dataloaders(X_train, X_test, y_train, y_test):
     return train_loader, test_loader, input_dim, output_dim
 
 
-def initialize_model(input_dim, output_dim, device):
+def initialise_model(input_dim, output_dim, device):
     model = CurrencyClassifier(input_dim, output_dim).to(device)
     criterion = CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
