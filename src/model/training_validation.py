@@ -13,9 +13,9 @@ from utils.constants import (
     SAVED_MODELS_DIR,
     MODEL_NAME,
     X_TRAIN_FILE,
-    X_VAL_FILE,
+    X_TEST_FILE,
     Y_TRAIN_FILE,
-    Y_VAL_FILE
+    Y_TEST_FILE
 )
 
 # Constants
@@ -27,29 +27,29 @@ DROPOUT_RATE = 0.3
 
 def load_data():
     X_train = np.load(PROCESSED_DATA_DIR + X_TRAIN_FILE)
-    X_val = np.load(PROCESSED_DATA_DIR + X_VAL_FILE)
+    X_test = np.load(PROCESSED_DATA_DIR + X_TEST_FILE)
     y_train = np.load(PROCESSED_DATA_DIR + Y_TRAIN_FILE)
-    y_val = np.load(PROCESSED_DATA_DIR + Y_VAL_FILE)
+    y_test = np.load(PROCESSED_DATA_DIR + Y_TEST_FILE)
 
-    return X_train, X_val, y_train, y_val
+    return X_train, X_test, y_train, y_test
 
 
-def create_dataloaders(X_train, X_val, y_train, y_val, batch_size):
+def create_dataloaders(X_train, X_test, y_train, y_test, batch_size):
     X_train_tensor = FloatTensor(X_train)
-    X_val_tensor = FloatTensor(X_val)
+    X_test_tensor = FloatTensor(X_test)
     y_train_tensor = LongTensor(y_train)
-    y_val_tensor = LongTensor(y_val)
+    y_test_tensor = LongTensor(y_test)
 
     train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
-    val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
+    test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     input_dim = X_train_tensor.shape[1]
     output_dim = len(np.unique(y_train))
 
-    return train_loader, val_loader, input_dim, output_dim
+    return train_loader, test_loader, input_dim, output_dim
 
 
 def initialize_model(input_dim, output_dim, dropout_rate, device):
@@ -60,10 +60,10 @@ def initialize_model(input_dim, output_dim, dropout_rate, device):
     return model, criterion, optimizer
 
 
-def train_and_validate(model, criterion, optimizer, train_loader, val_loader, device, epochs):
-    train_losses, val_losses = [], []
-    train_accuracies, val_accuracies = [], []
-    best_val_loss = float('inf')
+def train_and_validate(model, criterion, optimizer, train_loader, test_loader, device, epochs):
+    train_losses, test_losses = [], []
+    train_accuracies, test_accuracies = [], []
+    best_test_loss = float('inf')
     best_model_state = None
 
     for epoch in range(epochs):
@@ -87,36 +87,36 @@ def train_and_validate(model, criterion, optimizer, train_loader, val_loader, de
 
         # Validation
         model.eval()
-        val_running_loss, val_correct, val_total = 0.0, 0, 0
+        test_running_loss, test_correct, test_total = 0.0, 0, 0
         with torch.no_grad():
-            for X_batch, y_batch in val_loader:
+            for X_batch, y_batch in test_loader:
                 X_batch, y_batch = X_batch.to(device), y_batch.to(device)
                 outputs = model(X_batch)
                 loss = criterion(outputs, y_batch)
-                val_running_loss += loss.item() * X_batch.size(0)
+                test_running_loss += loss.item() * X_batch.size(0)
                 _, preds = torch.max(outputs, 1)
-                val_correct += (preds == y_batch).sum().item()
-                val_total += y_batch.size(0)
-        val_loss = val_running_loss / val_total
-        val_acc = val_correct / val_total
-        val_losses.append(val_loss)
-        val_accuracies.append(val_acc)
+                test_correct += (preds == y_batch).sum().item()
+                test_total += y_batch.size(0)
+        test_loss = test_running_loss / test_total
+        test_acc = test_correct / test_total
+        test_losses.append(test_loss)
+        test_accuracies.append(test_acc)
 
-        print(f"Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}")
+        print(f"Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | Test Loss: {test_loss:.4f} | Test Acc: {test_acc:.4f}")
 
         # Save best model
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
+        if test_loss < best_test_loss:
+            best_test_loss = test_loss
             best_model_state = model.state_dict()
 
-    return train_losses, val_losses, train_accuracies, val_accuracies, best_model_state
+    return train_losses, test_losses, train_accuracies, test_accuracies, best_model_state
 
 
-def plot_curves(train_losses, val_losses, train_accuracies, val_accuracies):
+def plot_curves(train_losses, test_losses, train_accuracies, test_accuracies):
     plt.figure(figsize=(12,5))
     plt.subplot(1,2,1)
     plt.plot(train_losses, label='Train Loss')
-    plt.plot(val_losses, label='Val Loss')
+    plt.plot(test_losses, label='Test Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
@@ -124,7 +124,7 @@ def plot_curves(train_losses, val_losses, train_accuracies, val_accuracies):
 
     plt.subplot(1,2,2)
     plt.plot(train_accuracies, label='Train Acc')
-    plt.plot(val_accuracies, label='Val Acc')
+    plt.plot(test_accuracies, label='Test Acc')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.legend()
@@ -139,13 +139,13 @@ def save_model(best_model_state):
 
 def main():
     device = get_device()
-    X_train, X_val, y_train, y_val = load_data()
-    train_loader, val_loader, input_dim, output_dim = create_dataloaders(X_train, X_val, y_train, y_val, BATCH_SIZE)
+    X_train, X_test, y_train, y_test = load_data()
+    train_loader, test_loader, input_dim, output_dim = create_dataloaders(X_train, X_test, y_train, y_test, BATCH_SIZE)
     model, criterion, optimizer = initialize_model(input_dim, output_dim, DROPOUT_RATE, device)
-    train_losses, val_losses, train_accuracies, val_accuracies, best_model_state = train_and_validate(
-        model, criterion, optimizer, train_loader, val_loader, device, EPOCHS
+    train_losses, test_losses, train_accuracies, test_accuracies, best_model_state = train_and_validate(
+        model, criterion, optimizer, train_loader, test_loader, device, EPOCHS
     )
-    plot_curves(train_losses, val_losses, train_accuracies, val_accuracies)
+    plot_curves(train_losses, test_losses, train_accuracies, test_accuracies)
     save_model(best_model_state)
 
 

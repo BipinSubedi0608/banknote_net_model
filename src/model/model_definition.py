@@ -9,10 +9,8 @@ from utils.constants import (
     SAVED_MODELS_DIR,
     PROCESSED_DATA_DIR,
     X_TRAIN_FILE,
-    X_VAL_FILE,
     X_TEST_FILE,
     Y_TRAIN_FILE,
-    Y_VAL_FILE,
     Y_TEST_FILE,
     SCALER_NAME
 )
@@ -56,14 +54,10 @@ def preprocess_data(df: pd.DataFrame, scaler: StandardScaler):
     X = scaler.fit_transform(X)
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=420, stratify=y
+        X, y, test_size=0.25, random_state=420, stratify=y
     )
 
-    X_train, X_val, y_train, y_val = train_test_split(
-        X_train, y_train, test_size=0.1, random_state=420, stratify=y_train
-    )
-
-    return X_train, X_val, X_test, y_train, y_val, y_test
+    return X_train, X_test, y_train, y_test
 
 
 def save_scaler(scaler: StandardScaler):
@@ -71,10 +65,8 @@ def save_scaler(scaler: StandardScaler):
     joblib.dump(scaler, path)
 
 
-def save_processed_data(X_train, X_val, X_test, y_train, y_val, y_test):
+def save_processed_data(X_train, X_test, y_train, y_test):
     np.save(PROCESSED_DATA_DIR + X_TRAIN_FILE, X_train)
-    np.save(PROCESSED_DATA_DIR + X_VAL_FILE, X_val)
     np.save(PROCESSED_DATA_DIR + X_TEST_FILE, X_test)
     np.save(PROCESSED_DATA_DIR + Y_TRAIN_FILE, y_train)
-    np.save(PROCESSED_DATA_DIR + Y_VAL_FILE, y_val)
     np.save(PROCESSED_DATA_DIR + Y_TEST_FILE, y_test)
