@@ -2,7 +2,6 @@ import torch
 from torchvision import transforms
 from PIL import Image
 from torchvision.models import mobilenet_v2
-from model_definition import CurrencyClassifier
 
 
 def preprocess_image(image_path):
@@ -20,7 +19,6 @@ def preprocess_image(image_path):
 
 
 def embed_image(image_path, device):
-    """Convert raw image to embedding using MobileNetV2."""
     model = mobilenet_v2(pretrained=True).features.to(device)
     model.eval()
     img_tensor = preprocess_image(image_path).to(device)
@@ -31,16 +29,7 @@ def embed_image(image_path, device):
     return embedding.cpu().numpy().squeeze()
 
 
-def load_model(model_path, input_dim, output_dim, dropout_rate, device):
-    """Load trained currency classifier model."""
-    model = CurrencyClassifier(input_dim, output_dim, dropout_rate).to(device)
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    model.eval()
-    return model
-
-
 def predict_currency(embedding, model, device, label_encoder=None):
-    """Predict currency from embedding using trained model."""
     embedding_tensor = torch.FloatTensor(embedding).unsqueeze(0).to(device)
     with torch.no_grad():
         outputs = model(embedding_tensor)

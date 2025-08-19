@@ -1,22 +1,15 @@
 import torch.nn as nn
 import pandas as pd
 import numpy as np
-import joblib
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
 
-from utils.constants import (
-    SAVED_MODELS_DIR,
-    PROCESSED_DATA_DIR,
-    X_TRAIN_FILE,
-    X_TEST_FILE,
-    Y_TRAIN_FILE,
-    Y_TEST_FILE,
-    SCALER_NAME
-)
+
+# Constants
+DROPOUT_RATE = 0.3
 
 class CurrencyClassifier(nn.Module):
-    def __init__(self, input_size, output_size, dropout_rate):
+    def __init__(self, input_size, output_size):
         super().__init__()
 
         self.fc1 = nn.Linear(input_size, 192)
@@ -31,7 +24,7 @@ class CurrencyClassifier(nn.Module):
         self.fc4 = nn.Linear(48, output_size)
 
         self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(dropout_rate)
+        self.dropout = nn.Dropout(DROPOUT_RATE)
 
     def forward(self, x):
         x = self.dropout(self.relu(self.bn1(self.fc1(x))))
@@ -42,7 +35,7 @@ class CurrencyClassifier(nn.Module):
         return x
     
 
-def preprocess_data(df: pd.DataFrame, scaler: StandardScaler):
+def preprocess_data(df: pd.DataFrame):
     df = df.dropna()
     df = df.drop_duplicates()
     
@@ -51,6 +44,7 @@ def preprocess_data(df: pd.DataFrame, scaler: StandardScaler):
     y = currency_encoder.fit_transform(y)
 
     X = df.drop(columns=['Currency', 'Denomination'])
+    scaler = StandardScaler()
     X = scaler.fit_transform(X)
 
     X_train, X_test, y_train, y_test = train_test_split(
@@ -58,15 +52,3 @@ def preprocess_data(df: pd.DataFrame, scaler: StandardScaler):
     )
 
     return X_train, X_test, y_train, y_test
-
-
-def save_scaler(scaler: StandardScaler):
-    path = SAVED_MODELS_DIR + SCALER_NAME
-    joblib.dump(scaler, path)
-
-
-def save_processed_data(X_train, X_test, y_train, y_test):
-    np.save(PROCESSED_DATA_DIR + X_TRAIN_FILE, X_train)
-    np.save(PROCESSED_DATA_DIR + X_TEST_FILE, X_test)
-    np.save(PROCESSED_DATA_DIR + Y_TRAIN_FILE, y_train)
-    np.save(PROCESSED_DATA_DIR + Y_TEST_FILE, y_test)
