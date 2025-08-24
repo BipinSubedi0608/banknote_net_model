@@ -39,7 +39,8 @@ def save_model(best_model_state):
     torch.save(best_model_state, path)
 
 
-def load_model(model_path, input_dim, output_dim, device):
+def load_model(input_dim, output_dim, device):
+    model_path = SAVED_MODELS_DIR + MODEL_NAME
     model = CurrencyClassifier(input_dim, output_dim).to(device)
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()

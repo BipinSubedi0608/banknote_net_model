@@ -1,7 +1,8 @@
 import torch
 from torchvision import transforms
 from PIL import Image
-from torchvision.models import mobilenet_v2
+from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
+import numpy as np
 
 
 def preprocess_image(image_path):
@@ -14,14 +15,18 @@ def preprocess_image(image_path):
         )
     ])
     image = Image.open(image_path).convert('RGB')
-    tensor = transform(image)
-    return tensor.unsqueeze(0) # type: ignore
+    tensor = transform(image).unsqueeze(0)  # type: ignore # Add batch dimension (1, 3, 224, 224)
+    
+    # Move channels dimension to the last (1, 224, 224, 3)
+    tensor = np.transpose(tensor, (0, 2, 3, 1))  # (1, 224, 224, 3)
+    return tensor
 
 
 def embed_image(image_path, device):
-    model = mobilenet_v2(pretrained=True).features.to(device)
+    weights = MobileNet_V2_Weights.DEFAULT
+    model = mobilenet_v2(weights=weights).features.to(device)
     model.eval()
-    img_tensor = preprocess_image(image_path).to(device)
+    img_tensor = preprocess_image(image_path)
     with torch.no_grad():
         embedding = model(img_tensor)
         embedding = torch.nn.functional.adaptive_avg_pool2d(embedding, (1, 1))
