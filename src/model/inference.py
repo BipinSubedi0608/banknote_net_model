@@ -1,8 +1,12 @@
 import torch
 from torchvision import transforms
 from PIL import Image
-from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
 import numpy as np
+import onnxruntime
+
+from model.model_definition import CurrencyClassifier
+from utils.helpers import get_currency_from_label
+from utils.constants import SAVED_MODELS_DIR, ENCODER_MODEL_NAME
 
 
 def preprocess_image(image_path):
@@ -15,34 +19,30 @@ def preprocess_image(image_path):
         )
     ])
     image = Image.open(image_path).convert('RGB')
-    tensor = transform(image).unsqueeze(0)  # type: ignore # Add batch dimension (1, 3, 224, 224)
+    tensor = transform(image).unsqueeze(0) # type: ignore  # (1, 3, 224, 224)
+    tensor = tensor.permute(0, 2, 3, 1)     # (1, 224, 224, 3)
+    return tensor.numpy().astype(np.float32)
+
+
+def get_embedding(img):
+    encoder_model_path = SAVED_MODELS_DIR + ENCODER_MODEL_NAME
+    session = onnxruntime.InferenceSession(encoder_model_path)
+    input_name = session.get_inputs()[0].name
+    output_name = session.get_outputs()[0].name
+    onnx_output = session.run([output_name], {input_name: img})
+    embedding = onnx_output[0]
+    embedding_tensor = torch.tensor(embedding).float()
+    return embedding_tensor
+
+
+def predict_currency(embedding: torch.Tensor, classifier_model: CurrencyClassifier, device: torch.device):
+    classifier_model.eval()
+    with torch.no_grad():
+        output = classifier_model(embedding.to(device))
+        probs = torch.softmax(output, dim=1)
+        pred_label = torch.argmax(output, dim=1).item().__int__()
+        confidence = probs[0][pred_label].item()
+    print(pred_label)
+    currency = get_currency_from_label(pred_label)
     
-    # Move channels dimension to the last (1, 224, 224, 3)
-    tensor = np.transpose(tensor, (0, 2, 3, 1))  # (1, 224, 224, 3)
-    return tensor
-
-
-def embed_image(image_path, device):
-    weights = MobileNet_V2_Weights.DEFAULT
-    model = mobilenet_v2(weights=weights).features.to(device)
-    model.eval()
-    img_tensor = preprocess_image(image_path)
-    with torch.no_grad():
-        embedding = model(img_tensor)
-        embedding = torch.nn.functional.adaptive_avg_pool2d(embedding, (1, 1))
-        embedding = embedding.view(embedding.size(0), -1)  # Flatten
-    return embedding.cpu().numpy().squeeze()
-
-
-def predict_currency(embedding, model, device, label_encoder=None):
-    embedding_tensor = torch.FloatTensor(embedding).unsqueeze(0).to(device)
-    with torch.no_grad():
-        outputs = model(embedding_tensor)
-        probs = torch.softmax(outputs, dim=1)
-        pred_idx = int(torch.argmax(probs, dim=1).item())
-        confidence = probs[0][pred_idx].item()
-    if label_encoder:
-        pred_label = label_encoder.inverse_transform([pred_idx])[0]
-    else:
-        pred_label = pred_idx
-    return pred_label, confidence
+    return currency, confidence

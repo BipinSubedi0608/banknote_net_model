@@ -9,7 +9,8 @@ from utils.constants import (
     Y_TRAIN_FILE,
     Y_TEST_FILE,
     SAVED_MODELS_DIR,
-    MODEL_NAME
+    CLASSIFIER_MODEL_NAME,
+    CURRENCY_LABEL_MAP
 )
 
 
@@ -35,13 +36,21 @@ def load_processed_data():
 
 
 def save_model(best_model_state):
-    path = SAVED_MODELS_DIR + MODEL_NAME
+    path = SAVED_MODELS_DIR + CLASSIFIER_MODEL_NAME
     torch.save(best_model_state, path)
 
 
 def load_model(input_dim, output_dim, device):
-    model_path = SAVED_MODELS_DIR + MODEL_NAME
+    model_path = SAVED_MODELS_DIR + CLASSIFIER_MODEL_NAME
     model = CurrencyClassifier(input_dim, output_dim).to(device)
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()
     return model
+
+
+def get_currency_from_label(label: int):
+    for key, value in CURRENCY_LABEL_MAP.items():
+        print("Key =",key)
+        if value == label:
+            return key
+    return None

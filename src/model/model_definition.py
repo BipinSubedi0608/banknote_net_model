@@ -1,8 +1,10 @@
 import torch.nn as nn
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+
+from utils.constants import CURRENCY_LABEL_MAP
 
 
 # Constants
@@ -40,8 +42,7 @@ def preprocess_data(df: pd.DataFrame):
     df = df.drop_duplicates()
     
     y = df['Currency']
-    currency_encoder = LabelEncoder()
-    y = currency_encoder.fit_transform(y)
+    y = y.map(CURRENCY_LABEL_MAP)
 
     X = df.drop(columns=['Currency', 'Denomination'])
     scaler = StandardScaler()
