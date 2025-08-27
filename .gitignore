@@ -11,16 +11,13 @@ __pycache__/
 
 # Virtual environment
 venv/
+*venv*/
 .env/
 .envrc
 *.env
 
-# Data and model artifacts
-# data/
-# saved/
-# *.h5
-# *.pkl
-# *.npy
+# Temporary image files for prediction
+temp_uploaded_image.jpg
 
 # Logs and outputs
 *.log
@@ -31,7 +28,7 @@ venv/
 Thumbs.db
 
 # VS Code settings
-# .vscode/
+.vscode/
 
 # Python egg info
 *.egg

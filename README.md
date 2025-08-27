@@ -1,6 +1,6 @@
 # Currency Recognition App
 
-This project is a banknote currency recognition system using deep learning. It allows users to upload images of banknotes and predicts the currency type using a trained neural network.
+This project is a banknote currency recognition system using deep learning. It allows users to upload images of banknotes and predicts the currency type using a trained neural network. This model is trained on the [Banknote_net](https://github.com/microsoft/banknote-net) dataset provided by **Microsoft**.
 
 ## Features
 
@@ -19,8 +19,8 @@ This project is a banknote currency recognition system using deep learning. It a
 1. Clone the repository:
 
    ```sh
-   git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/BipinSubedi0608/banknote_net_model.git
+   cd banknote_net_model
    ```
 
 2. Create and activate a virtual environment:
@@ -49,11 +49,11 @@ This project is a banknote currency recognition system using deep learning. It a
 
 - `src/` - Source code
 - `data/` - Raw and processed data
-- `saved/` - Saved models and processed arrays
+- `saved/` - Saved models
 
 ## How it works
 
-- The model is trained to recognize different currencies from banknote images.
+- The model is trained to recognize different currencies from banknote images using [Banknote_net](https://github.com/microsoft/banknote-net) dataset provided by **Microsoft**.
 - The web app preprocesses the uploaded image and runs inference using the trained model.
 - The predicted currency and confidence score are displayed to the user.
 
