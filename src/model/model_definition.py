@@ -1,6 +1,5 @@
 import torch.nn as nn
 import pandas as pd
-import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
@@ -9,12 +8,14 @@ from utils.constants import CURRENCY_LABEL_MAP
 
 # Constants
 DROPOUT_RATE = 0.3
+INPUT_SIZE = 256
+OUTPUT_SIZE = 17
 
 class CurrencyClassifier(nn.Module):
-    def __init__(self, input_size, output_size):
+    def __init__(self):
         super().__init__()
 
-        self.fc1 = nn.Linear(input_size, 192)
+        self.fc1 = nn.Linear(INPUT_SIZE, 192)
         self.bn1 = nn.BatchNorm1d(192)
 
         self.fc2 = nn.Linear(192, 96)
@@ -23,7 +24,7 @@ class CurrencyClassifier(nn.Module):
         self.fc3 = nn.Linear(96, 48)
         self.bn3 = nn.BatchNorm1d(48)
 
-        self.fc4 = nn.Linear(48, output_size)
+        self.fc4 = nn.Linear(48, OUTPUT_SIZE)
 
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(DROPOUT_RATE)
@@ -52,4 +53,4 @@ def preprocess_data(df: pd.DataFrame):
         X, y, test_size=0.25, random_state=420, stratify=y
     )
 
-    return X_train, X_test, y_train, y_test
+    return X_train, X_test, y_train.to_numpy(), y_test.to_numpy()

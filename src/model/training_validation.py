@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 import torch.optim as optim
 from torch import FloatTensor, LongTensor
@@ -26,14 +25,11 @@ def create_dataloaders(X_train, X_test, y_train, y_test):
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
-    input_dim = X_train_tensor.shape[1]
-    output_dim = len(np.unique(y_train))
-
-    return train_loader, test_loader, input_dim, output_dim
+    return train_loader, test_loader
 
 
-def initialise_model(input_dim, output_dim, device):
-    model = CurrencyClassifier(input_dim, output_dim).to(device)
+def initialise_model(device):
+    model = CurrencyClassifier().to(device)
     criterion = CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 

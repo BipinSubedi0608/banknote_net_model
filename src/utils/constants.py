@@ -1,14 +1,7 @@
 RAW_FEATHER_DATA_PATH = "../data/banknote_net.feather"
-RAW_CSV_DATA_PATH = "../data/banknote_net.csv"
 
-PROCESSED_DATA_DIR = "../saved/processed/"
 SAVED_MODELS_DIR = "../saved/models/"
 EXAMPLE_IMAGES_DIR = "../data/examples/"
-
-X_TRAIN_FILE = "X_train.npy"
-Y_TRAIN_FILE = "y_train.npy"
-X_TEST_FILE = "X_test.npy"
-Y_TEST_FILE = "y_test.npy"
 
 CLASSIFIER_MODEL_NAME = 'currency_classifier.pth'
 ENCODER_MODEL_NAME = "banknote_net_encoder.onnx"

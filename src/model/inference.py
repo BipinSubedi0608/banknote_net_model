@@ -19,7 +19,7 @@ def preprocess_image(image_path):
         )
     ])
     image = Image.open(image_path).convert('RGB')
-    tensor = transform(image).unsqueeze(0) # type: ignore  # (1, 3, 224, 224)
+    tensor = transform(image).unsqueeze(0) # (1, 3, 224, 224) # type: ignore  
     tensor = tensor.permute(0, 2, 3, 1)     # (1, 224, 224, 3)
     return tensor.numpy().astype(np.float32)
 
@@ -42,7 +42,6 @@ def predict_currency(embedding: torch.Tensor, classifier_model: CurrencyClassifi
         probs = torch.softmax(output, dim=1)
         pred_label = torch.argmax(output, dim=1).item().__int__()
         confidence = probs[0][pred_label].item()
-    print(pred_label)
     currency = get_currency_from_label(pred_label)
     
     return currency, confidence
