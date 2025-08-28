@@ -26,9 +26,12 @@ This project is a banknote currency recognition system using deep learning. It a
 2. Create and activate a virtual environment:
 
    ```sh
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python -m venv <VENV_NAME>
+   source <VENV_NAME>/bin/activate  # On Windows: <VENV_NAME>\Scripts\activate
    ```
+
+   **NOTE:** Replace the `<VENV_NAME>` with the name you want for your virtual environment.<br>
+   _THE NAME MUST CONTAIN `venv` SOMEWHERE IN IT._
 
 3. Install dependencies:
    ```sh
@@ -37,14 +40,13 @@ This project is a banknote currency recognition system using deep learning. It a
 
 ## Usage
 
-1. Place your trained model weights in the appropriate folder (see [`src/app.py`](src/app.py) for path).
-2. Run the Streamlit app from `src` directory:
+1. Run the Streamlit app from `src` directory:
    ```sh
    cd src
    streamlit run app.py
    ```
-3. Open the provided local URL in your browser.
-4. Upload a banknote image and view the prediction.
+2. Open the provided local URL in your browser.
+3. Upload a banknote image and view the prediction.
 
 ## Project Structure
 
@@ -60,8 +62,8 @@ This project is a banknote currency recognition system using deep learning. It a
 
 ## License
 
-MIT License
+Not licensed yet.
 
 ## Contact
 
-For questions or contributions, open an issue or pull request on GitHub.
+For questions or contributions, open an issue on GitHub or visit the developer's [portfolio](https://bipinsubedi1.com.np) to contact.
