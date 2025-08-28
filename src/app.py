@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 
 from model.inference import preprocess_image, get_embedding, predict_currency
@@ -28,7 +29,12 @@ if uploaded_file is not None:
     # Predict currency and confidence
     currency, confidence = predict_currency(embedding_tensor, model, device)
 
-    if currency == None: currency = "Unknown"
+    if currency == None: 
+        currency = "Unknown"
 
     st.success(f"Predicted Currency: **{currency}**")
     st.info(f"Confidence Score: **{confidence*100:.2f}%**")
+
+    # Remove temp file after inference
+    if os.path.exists(temp_path):
+        os.remove(temp_path)

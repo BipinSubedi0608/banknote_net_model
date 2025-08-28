@@ -1,29 +1,26 @@
 RAW_FEATHER_DATA_PATH = "../data/banknote_net.feather"
 
 SAVED_MODELS_DIR = "../saved/models/"
-EXAMPLE_IMAGES_DIR = "../data/examples/"
 
 CLASSIFIER_MODEL_NAME = 'currency_classifier.pth'
 ENCODER_MODEL_NAME = "banknote_net_encoder.onnx"
 
-EXAMPLE_IMAGES_NAMES = [f"example_{i}.jpg" for i in range(1,5)]
-
 CURRENCY_LABEL_MAP = {
-    'AUD': 0,
+    'TRY': 0,
     'BRL': 1,
-    'CAD': 2,
+    'INR': 2,
     'EUR': 3,
-    'GBP': 4,
-    'IDR': 5,
-    'INR': 6,
-    'JPY': 7,
-    'MXN': 8,
-    'MYR': 9,
-    'NNR': 10,
+    'JPY': 4,
+    'AUD': 5,
+    'USD': 6,
+    'MYR': 7,
+    'IDR': 8,
+    'PHP': 9,
+    'CAD': 10,
     'NZD': 11,
-    'PHP': 12,
-    'PKR': 13,
-    'SGD': 14,
-    'TRY': 15,
-    'USD': 16
+    'PKR': 12,
+    'MXN': 13,
+    'GBP': 14,
+    'SGD': 15,
+    'NNR': 16,
 }

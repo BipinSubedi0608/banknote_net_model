@@ -38,9 +38,10 @@ This project is a banknote currency recognition system using deep learning. It a
 ## Usage
 
 1. Place your trained model weights in the appropriate folder (see [`src/app.py`](src/app.py) for path).
-2. Run the Streamlit app:
+2. Run the Streamlit app from `src` directory:
    ```sh
-   streamlit run src/app.py
+   cd src
+   streamlit run app.py
    ```
 3. Open the provided local URL in your browser.
 4. Upload a banknote image and view the prediction.

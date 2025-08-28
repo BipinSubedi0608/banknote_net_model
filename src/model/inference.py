@@ -43,5 +43,7 @@ def predict_currency(embedding: torch.Tensor, classifier_model: CurrencyClassifi
         pred_label = torch.argmax(output, dim=1).item().__int__()
         confidence = probs[0][pred_label].item()
     currency = get_currency_from_label(pred_label)
+    if confidence < 0.5:
+        currency = None
     
     return currency, confidence

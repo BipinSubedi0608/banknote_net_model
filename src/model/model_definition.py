@@ -1,6 +1,5 @@
 import torch.nn as nn
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
 from utils.constants import CURRENCY_LABEL_MAP
@@ -46,11 +45,9 @@ def preprocess_data(df: pd.DataFrame):
     y = y.map(CURRENCY_LABEL_MAP)
 
     X = df.drop(columns=['Currency', 'Denomination'])
-    scaler = StandardScaler()
-    X = scaler.fit_transform(X)
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.25, random_state=420, stratify=y
     )
 
-    return X_train, X_test, y_train.to_numpy(), y_test.to_numpy()
+    return X_train.to_numpy(), X_test.to_numpy(), y_train.to_numpy(), y_test.to_numpy()
