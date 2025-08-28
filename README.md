@@ -10,7 +10,7 @@ This project is a banknote currency recognition system using deep learning. It a
 
 ## Requirements
 
-- Python 3.8+
+- Python 3.11.9
 - [Virtual environment (venv)](https://docs.python.org/3/library/venv.html)
 - See [`requirements.txt`](requirements.txt) for Python packages
 
