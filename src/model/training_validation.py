@@ -4,6 +4,7 @@ from torch import FloatTensor, LongTensor
 from torch.utils.data import TensorDataset, DataLoader
 from torch.nn import CrossEntropyLoss
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, recall_score, precision_score, f1_score
 
 from model.model_definition import CurrencyClassifier
 
@@ -37,8 +38,18 @@ def initialise_model(device):
 
 
 def train_and_validate(model, criterion, optimizer, train_loader, test_loader, device):
-    train_losses, test_losses = [], []
-    train_accuracies, test_accuracies = [], []
+    train_metrics = {
+        "losses": [],
+        "accuracies": []
+    }
+    test_metrics = {
+        "losses": [],
+        "accuracies": [],
+        "conf_matrices": [],
+        "recalls": [],
+        "precisions": [],
+        "f1s": []
+    }
     best_test_loss = float('inf')
     best_model_state = None
 
@@ -58,12 +69,13 @@ def train_and_validate(model, criterion, optimizer, train_loader, test_loader, d
             total += y_batch.size(0)
         train_loss = running_loss / total
         train_acc = correct / total
-        train_losses.append(train_loss)
-        train_accuracies.append(train_acc)
+        train_metrics["losses"].append(train_loss)
+        train_metrics["accuracies"].append(train_acc)
 
         # Validation
         model.eval()
         test_running_loss, test_correct, test_total = 0.0, 0, 0
+        all_preds, all_targets = [], []
         with torch.no_grad():
             for X_batch, y_batch in test_loader:
                 X_batch, y_batch = X_batch.to(device), y_batch.to(device)
@@ -73,19 +85,33 @@ def train_and_validate(model, criterion, optimizer, train_loader, test_loader, d
                 _, preds = torch.max(outputs, 1)
                 test_correct += (preds == y_batch).sum().item()
                 test_total += y_batch.size(0)
+                all_preds.extend(preds.cpu().numpy())
+                all_targets.extend(y_batch.cpu().numpy())
         test_loss = test_running_loss / test_total
         test_acc = test_correct / test_total
-        test_losses.append(test_loss)
-        test_accuracies.append(test_acc)
+        test_metrics["losses"].append(test_loss)
+        test_metrics["accuracies"].append(test_acc)
+
+        # Additional metrics for test set
+        conf_matrix = confusion_matrix(all_targets, all_preds)
+        recall = recall_score(all_targets, all_preds, average='macro')
+        precision = precision_score(all_targets, all_preds, average='macro')
+        f1 = f1_score(all_targets, all_preds, average='macro')
+        test_metrics["conf_matrices"].append(conf_matrix)
+        test_metrics["recalls"].append(recall)
+        test_metrics["precisions"].append(precision)
+        test_metrics["f1s"].append(f1)
 
         print(f"Epoch {epoch+1}/{EPOCHS} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | Test Loss: {test_loss:.4f} | Test Acc: {test_acc:.4f}")
+        print(f"Confusion Matrix:\n{conf_matrix}")
+        print(f"Recall: {recall:.4f} | Precision: {precision:.4f} | F1: {f1:.4f}")
 
         # Save best model
         if test_loss < best_test_loss:
             best_test_loss = test_loss
             best_model_state = model.state_dict()
 
-    return train_losses, test_losses, train_accuracies, test_accuracies, best_model_state
+    return {"train": train_metrics, "test": test_metrics, "best_model_state": best_model_state}
 
 
 def plot_curves(train_losses, test_losses, train_accuracies, test_accuracies):
