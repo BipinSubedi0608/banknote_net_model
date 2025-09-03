@@ -26,8 +26,8 @@ This project is a banknote currency recognition system using deep learning. It a
 2. Create and activate a virtual environment:
 
    ```sh
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python -m venv <NAME>
+   source <NAME>/bin/activate  # On Windows: <NAME>\Scripts\activate
    ```
 
 3. Install dependencies:
